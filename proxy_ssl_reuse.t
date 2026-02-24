@@ -592,52 +592,52 @@ $t->run();
 ###############################################################################
 
 http_get('/verify_prime');
-like(http_get('/verify_strict'), qr/200 OK.*SEE/ms, 'verify reuse');
+like(http_get('/verify_strict'), qr/502 Bad/ms, 'verify isolated');
 http_get('/verify_prime?close');
 like(http_get('/verify_strict'), qr/502 Bad/ms, 'verify fresh');
 
 http_get('/name_prime');
-like(http_get('/name_strict'), qr/200 OK.*bad.example.com/ms, 'name reuse');
+like(http_get('/name_strict'), qr/502 Bad/ms, 'name isolated');
 http_get('/name_prime?close');
 like(http_get('/name_strict'), qr/502 Bad/ms, 'name fresh');
 
 http_get('/sni_prime');
-like(http_get('/sni_strict'), qr/200 OK.*sni.example.com/ms, 'sni reuse');
+like(http_get('/sni_strict'), qr/200 OK.*X-Name: ,/ms, 'sni isolated');
 http_get('/sni_prime?close');
 like(http_get('/sni_strict'), qr/200 OK.*X-Name: ,/ms, 'sni fresh');
 
 http_get('/depth_prime');
-like(http_get('/depth_strict'), qr/200 OK.*SEE/ms, 'depth reuse');
+like(http_get('/depth_strict'), qr/502 Bad/ms, 'depth isolated');
 http_get('/depth_prime?close');
 like(http_get('/depth_strict'), qr/502 Bad/ms, 'depth fresh');
 
 http_get('/crl_prime');
-like(http_get('/crl_strict'), qr/200 OK.*SEE/ms, 'crl reuse');
+like(http_get('/crl_strict'), qr/502 Bad/ms, 'crl isolated');
 http_get('/crl_prime?close');
 like(http_get('/crl_strict'), qr/502 Bad/ms, 'crl fresh');
 
 http_get('/ciphers_prime');
-like(http_get('/ciphers_strict'), qr/200 OK.*SEE/ms, 'ciphers reuse');
+like(http_get('/ciphers_strict'), qr/502 Bad/ms, 'ciphers isolated');
 http_get('/ciphers_prime?close');
 like(http_get('/ciphers_strict'), qr/502 Bad/ms, 'ciphers fresh');
 
 http_get('/protocols_prime');
-like(http_get('/protocols_strict'), qr/200 OK.*SEE/ms, 'proto reuse');
+like(http_get('/protocols_strict'), qr/502 Bad/ms, 'proto isolated');
 http_get('/protocols_prime?close');
 like(http_get('/protocols_strict'), qr/502 Bad/ms, 'proto fresh');
 
 http_get('/cert_prime');
-like(http_get('/cert_strict'), qr/200 OK.*client.good/ms, 'cert reuse');
+like(http_get('/cert_strict'), qr/(?:400|502) Bad/ms, 'cert isolated');
 http_get('/cert_prime?close');
 like(http_get('/cert_strict'), qr/(?:400|502) Bad/ms, 'cert fresh');
 
 http_get('/conf_prime');
-like(http_get('/conf_strict'), qr/200 OK.*client.good/ms, 'conf reuse');
+like(http_get('/conf_strict'), qr/(?:400|502) Bad/ms, 'conf isolated');
 http_get('/conf_prime?close');
 like(http_get('/conf_strict'), qr/(?:400|502) Bad/ms, 'conf fresh');
 
 http_get('/bind_prime');
-like(http_get('/bind_strict'), qr/200 OK.*127\.0\.0\.2/ms, 'bind reuse');
+like(http_get('/bind_strict'), qr/200 OK.*127\.0\.0\.1/ms, 'bind isolated');
 http_get('/bind_prime?close');
 like(http_get('/bind_strict'), qr/200 OK.*127\.0\.0\.1/ms, 'bind fresh');
 

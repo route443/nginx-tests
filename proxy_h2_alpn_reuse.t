@@ -108,7 +108,7 @@ $t->try_run('no proxy_http_version 2')->plan(5);
 
 like(http_get('/prime'), qr/200 OK.*HTTP\/2\.0.*h2/ms, 'prime h2');
 like(http_get('/prime'), qr/200 OK.*HTTP\/2\.0.*h2/ms, 'prime h2 reuse');
-like(http_get('/strict'), qr/504 Gateway Time-out/ms, 'strict 504');
+like(http_get('/strict'), qr/200 OK.*HTTP\/1\.1/ms, 'strict isolated');
 like(http_get('/prime?close=1'), qr/502 Bad Gateway/ms, 'prime close 502');
 like(http_get('/strict'), qr/200 OK.*HTTP\/1\.1/ms, 'strict h1 after close');
 
