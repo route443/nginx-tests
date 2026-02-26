@@ -102,13 +102,19 @@ system('openssl req -x509 -new '
 	. ">>$d/openssl.out 2>&1") == 0
 	or die "Can't create certificate for localhost: $!\n";
 
-$t->try_run('no proxy_http_version 2')->plan(5);
+$t->try_run('no proxy_http_version 2')->plan(6);
 
 ###############################################################################
 
-like(http_get('/prime'), qr/200 OK.*HTTP\/2\.0.*h2/ms, 'prime h2');
-like(http_get('/prime'), qr/200 OK.*HTTP\/2\.0.*h2/ms, 'prime h2 reuse');
-like(http_get('/strict'), qr/200 OK.*HTTP\/1\.1/ms, 'strict isolated');
+my ($r, $n);
+
+like($r = http_get('/prime'), qr/200 OK.*HTTP\/2\.0.*h2/ms, 'prime h2');
+$r =~ m/X-Backend-Conn: (\d+)/i; $n = $1;
+like(http_get('/prime'),
+	qr/200 OK(?=.*HTTP\/2\.0)(?=.*h2)(?=.*X-Backend-Conn: $n)/msi,
+	'prime h2 reuse');
+like($r = http_get('/strict'), qr/200 OK.*HTTP\/1\.1/ms, 'strict isolated');
+unlike($r, qr/X-Backend-Conn: $n/i, 'strict no h2 reuse');
 like(http_get('/prime?close=1'), qr/502 Bad Gateway/ms, 'prime close 502');
 like(http_get('/strict'), qr/200 OK.*HTTP\/1\.1/ms, 'strict h1 after close');
 
