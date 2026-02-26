@@ -34,7 +34,7 @@ select STDOUT; $| = 1;
 
 my $t = Test::Nginx->new()
 	->has(qw/http http_ssl proxy upstream_keepalive sni/)
-	->has_daemon('openssl')->plan(20)
+	->has_daemon('openssl')->plan(22)
 	->write_file_expand('nginx.conf', <<'EOF');
 
 %%TEST_GLOBALS%%
@@ -137,6 +137,20 @@ http {
             proxy_pass https://u_name/;
             proxy_ssl_verify on;
             proxy_ssl_trusted_certificate bad.example.com.crt;
+            proxy_ssl_server_name on;
+            proxy_ssl_name good.example.com;
+        }
+
+        location /name_sni_prime {
+            proxy_pass https://u_name/;
+            proxy_ssl_verify off;
+            proxy_ssl_server_name on;
+            proxy_ssl_name bad.example.com;
+        }
+
+        location /name_sni_strict {
+            proxy_pass https://u_name/;
+            proxy_ssl_verify off;
             proxy_ssl_server_name on;
             proxy_ssl_name good.example.com;
         }
@@ -600,6 +614,11 @@ http_get('/name_prime');
 like(http_get('/name_strict'), qr/502 Bad/ms, 'name isolated');
 http_get('/name_prime?close');
 like(http_get('/name_strict'), qr/502 Bad/ms, 'name fresh');
+
+http_get('/name_sni_prime');
+like(http_get('/name_sni_strict'), qr/good\.example\.com,/, 'name sni iso');
+http_get('/name_sni_prime?close');
+like(http_get('/name_sni_strict'), qr/good\.example\.com,/, 'name sni fresh');
 
 http_get('/sni_prime');
 like(http_get('/sni_strict'), qr/200 OK.*X-Name: ,/ms, 'sni isolated');
